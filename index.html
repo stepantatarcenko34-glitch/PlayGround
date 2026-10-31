@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#14130f" />
+  <title>BARE METAL — A Rustbelt Survival Sim</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2314130f'/%3E%3Cpath d='M10 48V16h12l10 18 10-18h12v32H44V32L32 50 20 32v16z' fill='%23c2542a'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div id="hud" class="hidden">
+    <div class="hud-corner tl">
+      <div class="place">HOLLOW CREEK <span>/</span> GARAGE</div>
+      <div id="objective" class="objective"></div>
+      <div id="compass" class="compass"><span class="card">N</span><span id="hdr">000°</span><i></i><span id="jobDist"></span></div>
+    </div>
+    <div class="hud-corner tr">
+      <div id="money" class="money">$42</div>
+      <div id="clock" class="clock">DAY 1 · 17:40</div>
+    </div>
+
+    <div id="survival" class="survival"></div>
+
+    <div id="toolbelt" class="toolbelt"></div>
+
+    <div class="crosshair" id="crosshair"><span></span></div>
+    <div id="prompt" class="prompt"><span class="key">E</span><span id="promptText"></span><div class="holdbar"><i></i></div></div>
+    <div id="toast" class="toast"></div>
+    <div id="subtitle" class="subtitle"></div>
+    <div id="speedo" class="speedo hidden"><div class="spd"><b>0</b><span>MPH</span></div><div class="gear">THE PATIENT · 4.6L</div><div id="fuelBar" class="fuelbar"><i></i></div></div>
+    <div class="hintbar" id="hintbar">WASD move · MOUSE look · E interact · 1–5 tools · TAB manual · ESC pause</div>
+  </div>
+
+  <div id="cinematic" class="cinematic"></div>
+
+  <section id="start" class="start">
+    <div class="start-shade"></div>
+    <div class="start-grid">
+      <div class="start-main">
+        <div class="kicker"><span class="rule"></span> HOLLOW CREEK · OCTOBER 1974</div>
+        <h1>BARE<span>METAL</span></h1>
+        <div class="start-rule"></div>
+        <p class="tagline">No manual. No mercy.</p>
+        <p class="blurb">A stripped pickup. Forty-two dollars.<br/>One body that still needs feeding.</p>
+        <button id="startBtn" class="btn-primary">Start Game</button>
+        <div class="start-meta">
+          <span>A RUSTBELT SURVIVAL SIM</span>
+          <span class="dot"></span>
+          <span>VERTICAL SLICE 01</span>
+        </div>
+      </div>
+      <aside class="start-side">
+        <div class="stamp">HC<br/><small>GARAGE</small></div>
+        <ul>
+          <li><b>01</b> Build the truck. Every bolt matters.</li>
+          <li><b>02</b> Tune it or walk. The road is unforgiving.</li>
+          <li><b>03</b> Eat. Drink. Sleep. Or die for good.</li>
+        </ul>
+        <p class="small">Headphones recommended.<br/>Permadeath is on.</p>
+        <div class="controls-mini">
+          <span><b>WASD</b> MOVE</span><span><b>MOUSE</b> LOOK</span><span><b>E</b> USE</span><span><b>TAB</b> MANUAL</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <div id="overlay" class="overlay hidden">
+    <div id="manualPanel" class="panel paper manual hidden"></div>
+    <div id="boardPanel" class="panel board hidden"></div>
+    <div id="storePanel" class="panel store hidden"></div>
+    <div id="tunePanel" class="panel tune hidden"></div>
+    <div id="torquePanel" class="panel torque hidden">
+      <div class="torque-card">
+        <div class="t-label"><span id="tPart">CYLINDER HEAD BOLT</span><span id="tSpec">28–34 Nm</span></div>
+        <canvas id="torqueCanvas" width="720" height="420"></canvas>
+        <div class="t-read"><b id="tValue">0.0</b><span>Nm</span></div>
+        <div class="t-hint" id="tHint">HOLD LEFT MOUSE — RELEASE IN THE GREEN</div>
+        <button id="torqueHold" class="btn-hold">HOLD TO TORQUE</button>
+      </div>
+    </div>
+    <div id="pausePanel" class="panel pause hidden"></div>
+    <div id="deathPanel" class="panel death hidden"></div>
+  </div>
+
+  <div id="mobile" class="mobile hidden">
+    <div id="joystick" class="joystick"><div class="stick"></div></div>
+    <button id="actionBtn" class="action-btn">E</button>
+  </div>
+
+  <div id="lowHealth" class="low-health"></div>
+  <div id="vignette" class="vignette"></div>
+  <div id="grain" class="grain"></div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
