@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#14120e" />
+<title>HARD START — a grease-stained survival sim</title>
+<link rel="stylesheet" href="./styles.css" />
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div id="grain"></div>
+<div id="vignette"></div>
+
+<!-- ============ TITLE ============ -->
+<div id="title" class="screen">
+  <div class="title-inner">
+    <div class="eyebrow">A GREASE-STAINED SURVIVAL SIM</div>
+    <h1 class="logo">HARD<span>START</span></h1>
+    <p class="tagline">No guide. No mercy. A bare chassis, a box of loose parts,<br/>and forty dollars to your name.</p>
+    <div class="title-actions">
+      <button id="btn-new" class="btn primary big">NEW RUN</button>
+      <button id="btn-continue" class="btn ghost big hidden">CONTINUE</button>
+    </div>
+    <div class="title-controls">
+      <div><b>GARAGE</b> drag to look &middot; wheel to zoom &middot; click a part</div>
+      <div><b>DRIVE</b> W A S D &middot; SHIFT brake &middot; E interact &middot; J jobs</div>
+      <div class="warn">PERMADEATH IS ON &middot; TORQUE SPECS ARE REAL &middot; LOOSE BOLTS FAIL</div>
+    </div>
+  </div>
+  <div class="title-foot">
+    <span>PROTOTYPE 0.9</span><span>BUILT FOR THE GARAGE</span><span id="audio-hint">CLICK ANYWHERE FOR SOUND</span>
+  </div>
+</div>
+
+<!-- ============ TOP HUD ============ -->
+<header id="topbar" class="hidden">
+  <div class="brand">HARD<span>START</span></div>
+  <div class="clock"><span id="hud-day">DAY 1</span><span id="hud-time">06:40</span></div>
+  <div id="meters">
+    <div class="meter" data-key="hunger" title="Hunger">
+      <svg viewBox="0 0 24 24"><path d="M6 3v7a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3M8 3v18M17 3c-2 2-2 6-2 9h4V3M19 12v9"/></svg>
+      <div class="bar"><i></i></div>
+    </div>
+    <div class="meter" data-key="thirst" title="Thirst">
+      <svg viewBox="0 0 24 24"><path d="M12 3s6 6.6 6 11a6 6 0 0 1-12 0c0-4.4 6-11 6-11Z"/></svg>
+      <div class="bar"><i></i></div>
+    </div>
+    <div class="meter" data-key="fatigue" title="Fatigue">
+      <svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>
+      <div class="bar"><i></i></div>
+    </div>
+    <div class="meter" data-key="stress" title="Stress">
+      <svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+      <div class="bar"><i></i></div>
+    </div>
+    <div class="meter" data-key="hygiene" title="Hygiene">
+      <svg viewBox="0 0 24 24"><path d="M7 21V9a5 5 0 0 1 10 0v12M4 21h16M12 4V2M9 13h6"/></svg>
+      <div class="bar"><i></i></div>
+    </div>
+  </div>
+  <div class="wallet">
+    <span class="lbl">CASH</span><span id="hud-cash">$40</span>
+    <span class="lbl fuel-lbl">DIESEL</span><span id="hud-fuel">68%</span>
+  </div>
+</header>
+
+<!-- ============ GARAGE UI ============ -->
+<aside id="parts-panel" class="panel hidden">
+  <div class="panel-head">
+    <span>ASSEMBLY</span><span id="build-count">00 / 14</span>
+  </div>
+  <div id="parts-list"></div>
+  <div class="panel-foot">
+    <span class="hint">CLICK A COMPONENT TO INSPECT</span>
+  </div>
+</aside>
+
+<div id="slot-card" class="panel hidden">
+  <div class="sc-head"><span id="sc-index">COMPONENT</span><button id="sc-close" class="x">×</button></div>
+  <h2 id="sc-name">CRANKSHAFT</h2>
+  <p id="sc-desc"></p>
+  <div class="specs">
+    <div><span>TOOL</span><b id="sc-tool">17 mm</b></div>
+    <div><span>TORQUE</span><b id="sc-torque">65 Nm ±5</b></div>
+    <div><span>BOLTS</span><b id="sc-bolts">2</b></div>
+  </div>
+  <div id="sc-status" class="sc-status"></div>
+  <div class="sc-actions">
+    <button id="sc-fit" class="btn primary">FIT &amp; TORQUE</button>
+    <button id="sc-replace" class="btn ghost hidden">BUY REPLACEMENT <span id="sc-price"></span></button>
+  </div>
+</div>
+
+<div id="garage-hints" class="hintbar hidden">
+  <span><b>DRAG</b> LOOK</span><span><b>SCROLL</b> ZOOM</span><span><b>CLICK</b> INSPECT</span>
+</div>
+
+<div id="home-actions" class="hidden">
+  <button class="home-btn" data-action="eat"><b>EAT</b><span>$6 · 25m</span></button>
+  <button class="home-btn" data-action="drink"><b>DRINK</b><span>free · 5m</span></button>
+  <button class="home-btn" data-action="wash"><b>WASH</b><span>$2 · 20m</span></button>
+  <button class="home-btn" data-action="sleep"><b>SLEEP</b><span>8h</span></button>
+  <button class="home-btn tune hidden" id="btn-tune"><b>TUNE</b><span>engine</span></button>
+  <button class="home-btn go" id="btn-headout"><b>HEAD OUT</b><span>to the tractor</span></button>
+</div>
+
+<!-- ============ WORLD UI ============ -->
+<div id="world-ui" class="hidden">
+  <div id="compass"><div class="compass-strip" id="compass-strip"></div><div class="compass-needle"></div></div>
+  <div id="job-tracker" class="panel">
+    <div class="jt-head"><span>JOB</span><span id="jt-pay">$140</span></div>
+    <h3 id="jt-name">FIREWOOD RUN</h3>
+    <div id="jt-stage">PICK UP AT SAWMILL</div>
+    <div class="jt-dist"><span id="jt-distance">—</span><span id="jt-arrow">▲</span></div>
+  </div>
+  <div id="prompt" class="hidden"><b>E</b><span id="prompt-text">INTERACT</span></div>
+  <div id="speedo">
+    <div class="sp-num"><span id="sp-val">0</span><small>KM/H</small></div>
+    <div class="sp-bar"><i id="sp-fill"></i></div>
+    <div class="sp-fuel"><span>DIESEL</span><i id="sp-fuel"></i></div>
+  </div>
+  <div id="mobile-controls">
+    <div id="joy"><div id="joy-knob"></div></div>
+    <div class="m-btns"><button id="m-brake">BRAKE</button><button id="m-use">USE</button><button id="m-phone">JOBS</button></div>
+  </div>
+  <div id="world-hints" class="hintbar">
+    <span><b>WASD</b> DRIVE</span><span><b>SHIFT</b> BRAKE</span><span><b>E</b> INTERACT</span><span><b>J</b> JOBS</span><span><b>H</b> HOME</span>
+  </div>
+</div>
+
+<!-- ============ TORQUE OVERLAY ============ -->
+<div id="torque" class="overlay hidden">
+  <div class="torque-wrap">
+    <div class="tq-left">
+      <div class="eyebrow">FASTENER TORQUE</div>
+      <h2 id="tq-name">CRANKSHAFT MAIN CAPS</h2>
+      <div class="tq-spec"><span>SPEC</span><b id="tq-spec">65 Nm ±5</b><span>BOLTS</span><b id="tq-bolts">2</b></div>
+      <div class="wrench-row" id="wrench-row"></div>
+      <div class="tq-log" id="tq-log">SELECT A WRENCH AND TIGHTEN.</div>
+    </div>
+    <div class="tq-gauge">
+      <svg id="tq-svg" viewBox="0 0 320 220"></svg>
+      <div class="tq-value"><span id="tq-value">0</span><small>Nm</small></div>
+      <div class="tq-zones"><span class="loose">LOOSE</span><span class="good">SPEC</span><span class="bad">STRIP</span></div>
+    </div>
+    <div class="tq-right">
+      <button id="tq-hold" class="hold-pad">
+        <span class="hp-icon">⟳</span>
+        <span class="hp-label">HOLD TO TIGHTEN</span>
+        <span class="hp-sub">SPACE / MOUSE</span>
+      </button>
+      <button id="tq-leave" class="btn ghost small hidden">LEAVE IT LOOSE</button>
+      <button id="tq-cancel" class="btn ghost small">BACK OFF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TUNING OVERLAY ============ -->
+<div id="tune" class="overlay hidden">
+  <div class="tune-wrap">
+    <div class="tune-head">
+      <div><div class="eyebrow">ENGINE BAY</div><h2>RUNNING TUNE</h2></div>
+      <div id="tune-state" class="tune-state">ENGINE OFF</div>
+      <button id="tune-close" class="x">×</button>
+    </div>
+    <div class="tune-body">
+      <div class="tach-wrap">
+        <svg id="tach-svg" viewBox="0 0 340 260"></svg>
+        <div class="tach-rpm"><span id="rpm-val">0</span><small>RPM</small></div>
+        <div class="tach-sub"><span id="tach-quality">IDLE QUALITY —</span></div>
+        <button id="tune-crank" class="btn primary crank">CRANK ENGINE</button>
+      </div>
+      <div class="knobs" id="knobs"></div>
+    </div>
+    <div class="tune-foot">
+      <div id="tune-hint">SET THE MIXTURE, VALVE LASH AND TIMING. GET IT TO IDLE CLEAN.</div>
+      <button id="tune-accept" class="btn primary hidden">BACK TO THE GARAGE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ JOB / ACTION MODAL ============ -->
+<div id="jobmodal" class="overlay hidden">
+  <div class="jm-wrap">
+    <div class="eyebrow" id="jm-eyebrow">JOB</div>
+    <h2 id="jm-title">LOADING FIREWOOD</h2>
+    <p id="jm-desc"></p>
+    <div class="jm-gauge">
+      <div class="jm-bar"><i id="jm-fill"></i></div>
+      <div class="jm-read"><span id="jm-read">0%</span><span id="jm-note">HOLD TO WORK</span></div>
+      <div class="jm-pressure hidden" id="jm-pressure-wrap">
+        <div class="jm-bar pressure"><i id="jm-pressure"></i></div>
+        <div class="jm-read"><span id="jm-pval">PRESSURE 0</span><span>KEEP IT IN THE GREEN</span></div>
+      </div>
+    </div>
+    <div class="jm-actions">
+      <button id="jm-hold" class="hold-pad small"><span class="hp-label">HOLD TO WORK</span><span class="hp-sub">SPACE / MOUSE</span></button>
+      <button id="jm-abort" class="btn ghost small">STOP</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PHONE ============ -->
+<div id="phone" class="overlay hidden">
+  <div class="phone-wrap">
+    <div class="phone-head"><span class="eyebrow">BURNER PHONE</span><button id="phone-close" class="x">×</button></div>
+    <h2>ODD JOBS</h2>
+    <div id="phone-jobs"></div>
+    <div class="phone-sep"></div>
+    <h2 class="small-h">AT HOME</h2>
+    <div class="phone-home" id="phone-home"></div>
+    <div class="phone-foot" id="phone-foot">NO SIGNAL OUT HERE. CASH ONLY.</div>
+  </div>
+</div>
+
+<!-- ============ DEATH ============ -->
+<div id="death" class="screen hidden">
+  <div class="death-inner">
+    <div class="eyebrow">RUN OVER</div>
+    <h1 class="logo dead">DEAD<span>END</span></h1>
+    <div id="death-cause" class="death-cause">DIED OF EXPOSURE</div>
+    <div id="death-stats" class="death-stats"></div>
+    <div id="death-epitaph" class="death-epitaph"></div>
+    <button id="btn-restart" class="btn primary big">START OVER</button>
+    <div class="death-note">EVERYTHING IS LOST. THAT IS THE POINT.</div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<div id="tooltip" class="hidden"></div>
+<div id="fade"></div>
+<div id="rotate-hint">TURN THE PHONE SIDEWAYS</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
