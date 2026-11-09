@@ -87,6 +87,7 @@ h1:after{content:"";position:absolute;left:.02em;bottom:-.03em;width:min(42%,340
 .start-side .small{font-size:9px;letter-spacing:.14em;line-height:1.9;color:rgba(232,221,197,.38);text-transform:uppercase;margin:0}
 .controls-mini{display:flex;flex-wrap:wrap;gap:7px 14px;font-size:8px;letter-spacing:.12em;color:rgba(232,221,197,.38)}
 .controls-mini b{color:rgba(232,221,197,.72);border:1px solid rgba(232,221,197,.16);padding:2px 5px;margin-right:3px;font-weight:400}
+.touch-hint{flex-basis:100%;font-size:7px;line-height:1.6;color:rgba(232,221,197,.5)}
 
 /* ---------------- HUD ---------------- */
 #hud{position:fixed;inset:0;z-index:10;pointer-events:none;transition:opacity .5s}
@@ -336,7 +337,7 @@ body.driving .hintbar{opacity:0}
   .start-side ul{display:none}
   .start-side .stamp{width:56px;height:56px;font-size:17px}
   .start-side .small{font-size:7px}
-  .controls-mini{display:none}
+  .controls-mini{display:flex;font-size:7px;max-width:100%}
   h1{font-size:clamp(84px,22vw,160px)}
   .start-meta{display:none}
   .blurb{font-size:11.5px;margin-bottom:22px}

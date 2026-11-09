@@ -73,6 +73,9 @@ export class Game {
       if (!data?.state || data.state.version !== 1) return false
       this.specs = data.specs
       this.state = data.state
+      if (this.state.job?.id === 'firewood' && this.state.job.deadlineDay == null) {
+        this.state.job.deadlineDay = this.state.day
+      }
       this.dead = this.state.health <= 0
       return !this.dead
     } catch { return false }
@@ -102,6 +105,19 @@ export class Game {
   advance(minutes) {
     this.s.minutes += minutes
     while (this.s.minutes >= 1440) { this.s.minutes -= 1440; this.s.day++ }
+    this.checkJobDeadline()
+  }
+
+  checkJobDeadline() {
+    const job = this.s.job
+    const deadlineDay = job?.deadlineDay ?? this.s.day
+    if (job?.id !== 'firewood' || (this.s.day < deadlineDay || (this.s.day === deadlineDay && this.s.minutes < 20.5 * 60))) return false
+    this.s.job = null
+    this.s.cargo = false
+    this.onJobExpired?.()
+    this.ui?.toast('Too late for the firewood run. The job is gone.', 'bad')
+    this.save()
+    return true
   }
 
   // ----- survival -------------------------------------------------
@@ -385,7 +401,8 @@ export class Game {
   acceptJob(id) {
     if (this.s.job) return { ok: false, msg: 'Finish the job you already took.' }
     if (!JOBS[id]) return { ok: false, msg: 'No such job.' }
-    this.s.job = { id, stage: 'to_farm', load: 0 }
+    if (id === 'firewood' && this.s.cargo) return { ok: false, msg: 'The truck bed must be empty for the firewood run.' }
+    this.s.job = { id, stage: 'to_farm', load: 0, ...(id === 'firewood' ? { deadlineDay: this.s.day } : {}) }
     this.sound?.ui()
     this.save()
     this.ui?.toast(id === 'courier' ? 'Parts run taken. Miller farm, east along the road.' : 'Firewood taken. Load at Miller farm, deliver to the store.', 'good')

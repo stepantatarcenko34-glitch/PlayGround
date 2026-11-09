@@ -30,6 +30,10 @@ const game = new Game(sound)
 const world = new World(scene, renderer)
 const ui = new UI(game, sound)
 game.attachUI(ui)
+game.onJobExpired = () => {
+  world.truck.setCargo(false)
+  syncMarkers()
+}
 const input = new Input(stage)
 
 // ---------------------------------------------------------------- state
@@ -496,7 +500,7 @@ function doAction() {
       sound.clunk()
       break
     }
-    case 'sink': ui.toast(game.drink(), 'good'); break
+    case 'sink': ui.toast(game.wash(), 'good'); break
     case 'eat': ui.toast(game.eat(), ''); break
     case 'coffee': ui.toast(game.coffee(), ''); break
     case 'smoke': ui.toast(game.smoke(), ''); break
@@ -610,6 +614,7 @@ function jobInteraction() {
   if (mode !== 'drive') return { text: `Get a vehicle for ${target.label}`, enabled: false, hold: 0, act: 'none' }
   if (Math.abs(speed) > 1.4) return { text: 'Stop the vehicle to load', enabled: false, hold: 0, act: 'none' }
   if (j.id === 'firewood' && vehicle !== 'truck') return { text: 'Firewood needs the truck', enabled: false, hold: 0, act: 'none' }
+  if (j.id === 'firewood' && j.stage === 'to_farm' && game.s.cargo) return { text: 'The truck bed must be empty', enabled: false, hold: 0, act: 'none' }
   if (j.stage === 'to_farm') {
     return { text: j.id === 'courier' ? 'Drop the crate at Miller farm — hold E' : 'Load firewood at Miller farm — hold E', enabled: true, hold: j.id === 'courier' ? 2.6 : 4.2, act: 'load' }
   }
